@@ -1,0 +1,8 @@
+.vscode
+
+venv/
+
+research
+object_detection
+
+models/
