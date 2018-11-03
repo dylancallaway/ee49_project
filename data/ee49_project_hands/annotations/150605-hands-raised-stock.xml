@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>150605-hands-raised-stock.jpg</filename>
+	<path>/home/dylan/Pictures/ee49_project_hands/images/150605-hands-raised-stock.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>2122</width>
+		<height>1415</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>hand</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>628</xmin>
+			<ymin>36</ymin>
+			<xmax>775</xmax>
+			<ymax>305</ymax>
+		</bndbox>
+	</object>
+</annotation>
