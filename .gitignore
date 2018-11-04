@@ -1,4 +1,6 @@
-.vscode
+.vscode/
+__pycache__/
+.ipynb_checkpoints/
 
 venv/
 
@@ -6,3 +8,5 @@ research
 object_detection
 
 models/
+
+test_images/

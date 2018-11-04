@@ -1,0 +1,1 @@
+All of these .sh files are meant to be run from the ee49_project directory.

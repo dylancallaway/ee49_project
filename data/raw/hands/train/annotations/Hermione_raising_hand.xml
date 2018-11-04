@@ -1,0 +1,26 @@
+<annotation verified="yes">
+	<folder>images</folder>
+	<filename>Hermione_raising_hand.jpg</filename>
+	<path>/home/dylan/ee49_project/data/raw/hands/train/images/Hermione_raising_hand.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>180</width>
+		<height>273</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>hand</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>53</xmin>
+			<ymin>29</ymin>
+			<xmax>78</xmax>
+			<ymax>71</ymax>
+		</bndbox>
+	</object>
+</annotation>
