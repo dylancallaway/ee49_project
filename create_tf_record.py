@@ -151,7 +151,6 @@ def dict_to_tf_example(data,
     return example
 
 
-# TODO make this function work for a custom dataset.
 def main(_):
     data_dir = FLAGS.data_dir
 

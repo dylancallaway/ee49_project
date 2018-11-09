@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>S1-P27-F-30-1.jpg</filename>
+	<path>/home/dylan/ee49_project/data/raw/hands/train/images/S1-P27-F-30-1.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>hand</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>90</xmin>
+			<ymin>126</ymin>
+			<xmax>400</xmax>
+			<ymax>458</ymax>
+		</bndbox>
+	</object>
+</annotation>

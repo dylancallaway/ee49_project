@@ -377,7 +377,7 @@ def train(create_tensor_dict_fn,
     Don't worry that it says session_config has no X member, it does.
     '''
     session_config.gpu_options.allow_growth = True
-    session_config.gpu_options.per_process_gpu_memory_fraction = 1
+    session_config.gpu_options.per_process_gpu_memory_fraction = 0.95
 
     # Save checkpoints regularly.
     keep_checkpoint_every_n_hours = train_config.keep_checkpoint_every_n_hours

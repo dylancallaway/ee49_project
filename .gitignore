@@ -10,3 +10,5 @@ object_detection
 models/
 
 test_images/
+
+hands_train.record
