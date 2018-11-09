@@ -12,3 +12,5 @@ models/
 test_images/
 
 hands_train.record
+
+images/
