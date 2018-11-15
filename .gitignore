@@ -14,3 +14,5 @@ test_images/
 hands_train.record
 
 images/
+
+frozen_inference_graph.pb
