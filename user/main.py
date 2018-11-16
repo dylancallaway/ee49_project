@@ -121,13 +121,16 @@ class Connection:
         data = b''
         self.conn, self.addr = self.recv_sock.accept()
         print('Incoming connection from:', self.addr)
+        tic = time.time()
         while True:
-            inc_data = self.conn.recv(8)
+            inc_data = self.conn.recv(8192)
             if inc_data == b'':
                 print('Received {} bytes.'.format(len(data)))
                 break
             else:
                 data += inc_data
+        toc = time.time()
+        print('RECEIVE TIME: {:.3f}'.format(toc-tic))
         image_np = pickle.loads(data)
         return image_np
 
@@ -211,7 +214,7 @@ class MainWindow(QMainWindow):
         self.options_list = ['A', 'B', 'C', 'D', 'E']
 
         self.connection = Connection(
-            '10.142.184.27', 5001, '10.142.184.27', 5002)
+            '10.42.0.1', 5001, '10.42.0.171', 5001)
 
         self.results = Results()
 
@@ -224,11 +227,10 @@ class MainWindow(QMainWindow):
         self.connection.send_cap_trigger()
         inc_data = self.connection.wait_image_data()
         image_np = inc_data
-
         tic = time.time()
         num_hands = self.model.detect(image_np)
         toc = time.time()
-        print('ELAPSED TIME: {:.3f}'.format(toc-tic))
+        print('INFERENCE TIME: {:.3f}'.format(toc-tic))
 
         self.results.add_result(option, num_hands)
         self.plot()
