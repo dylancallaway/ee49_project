@@ -1,9 +1,10 @@
 import socket
 import pickle
 import time
-import pygame
-import pygame.camera
-
+import picamera
+import io
+from PIL import Image
+import numpy as np
 
 class Connection:
     def __init__(self, recv_host, recv_port, send_host, send_port):
@@ -36,19 +37,20 @@ class Connection:
         return data
 
 
-pygame.camera.init()
-cam = pygame.camera.Camera('/dev/video0', (640, 480))
-cam.start()
+stream = io.BytesIO()
+cam = picamera.PiCamera()
+cam.resolution = (1920, 1080)
 
-connection = Connection('10.142.184.27', 5002, '10.142.184.27', 5001)
+connection = Connection('10.42.0.171', 5001, '10.42.0.1', 5001)
 
 while True:
     data = connection.wait_data()
     if data == b'cap':
         # for _ in range(50):
-        surf_img = cam.get_image()
-        image_np = pygame.surfarray.array3d(surf_img)
-        image_np = image_np.swapaxes(0, 1)
+        cam.capture(stream, format='jpeg')
+        stream.seek(0)
+        image_pil = Image.open(stream)
+        image_np = np.array(image_pil)
         image_data = pickle.dumps(image_np)
         connection.send_image(image_data)
     else:
