@@ -264,7 +264,7 @@ class MainWindow(QMainWindow):
         self.options_list = ['A', 'B', 'C', 'D', 'E']
 
         self.connection = Connection(
-            '192.168.0.16', 5001, '192.168.0.19', 5001)
+            '10.42.0.1', 5001, '10.42.0.171', 5001)
 
     def initResults(self):
         self.results = Results()

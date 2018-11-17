@@ -1,10 +1,10 @@
+#!/home/pi/ee49_project/rpi/venv/bin/python
+
 import socket
 import pickle
 import time
 import picamera
 import io
-from PIL import Image
-import numpy as np
 
 class Connection:
     def __init__(self, recv_host, recv_port, send_host, send_port):
@@ -16,7 +16,14 @@ class Connection:
 
         # Receiving socket setup
         self.recv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.recv_sock.bind((self.recv_host, self.recv_port))
+
+        for _ in range(20):
+            try:
+                self.recv_sock.bind((self.recv_host, self.recv_port))
+                break
+            except OSError:
+                time.sleep(5)
+            
         print('Listening at: {}:{}'.format(
             self.recv_host, str(self.recv_port)))
         self.recv_sock.listen(1)
@@ -36,46 +43,37 @@ class Connection:
         print('Received {} bytes.'.format(len(data)))
         return data
 
+    def end_connection(self):
+        self.recv_sock.close()
+        self.send_sock.close()
+
 
 cam = picamera.PiCamera()
-cam.resolution = (1920, 1080)
+cam.resolution = (2560, 1920)
 
 local_recv_host = '10.42.0.171'
 local_send_host = '10.42.0.1'
 
 
+connection = Connection(local_recv_host, 5001, local_send_host, 5001)
 
-connection = Connection('192.168.0.19', 5001, '192.168.0.16', 5001)
+stream = io.BytesIO()
 
 while True:
     data = connection.wait_data()
     if data == b'cap':
-        stream = io.BytesIO()
+        # tic = time.time()
         cam.capture(stream, format='jpeg')
         stream.seek(0)
-        image_pil = Image.open(stream)
-        image_np = np.array(image_pil)
-        image_data = pickle.dumps(image_np)
+        image_data = pickle.dumps(stream)
         connection.send_image(image_data)
+        # toc = time.time()
+        # print('SEND TIME:', toc-tic)
     else:
         print('Bad communication.')
         break
 
+connection.end_connection()
 
-# tic = time.time()
 
 
-# data_dict = {'type': 'image',
-#              'image': image_np,
-#              'option': 'A'}
-
-# data = pickle.dumps(data_dict)
-
-# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# s.connect((host, port))
-
-# s.sendall(data)
-# s.close()
-
-# toc = time.time()
-# print('ELAPSED TIME:', toc-tic)
