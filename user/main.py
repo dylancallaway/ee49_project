@@ -22,6 +22,7 @@ from object_detection.utils import ops as utils_ops
 import tensorflow as tf
 
 import numpy as np
+from PIL import Image
 
 
 class Model:
@@ -157,73 +158,103 @@ class Results:
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
+        self.title = 'AutoPoll'
 
-        # Axes
+        self.initUI()
+        self.initModel()
+        self.initConn()
+        self.initResults()
+
+    def initUI(self):
+        self.setWindowTitle(self.title)
+
+        # Results axes widget
+        self.ResultsAxesWidget = QWidget(self)
+        self.ResultsAxesWidget.figure = plt.figure()
+        self.ResultsAxesWidget.canvas = FigureCanvas(
+            self.ResultsAxesWidget.figure)
+        results_axes_layout = QVBoxLayout()
+        results_axes_layout.addWidget(self.ResultsAxesWidget.canvas)
+        self.ResultsAxesWidget.setLayout(results_axes_layout)
+
+        # Image axes widget
+        self.ImageAxesWidget = QWidget(self)
+        self.ImageAxesWidget.figure = plt.figure()
+        self.ImageAxesWidget.canvas = FigureCanvas(
+            self.ImageAxesWidget.figure)
+        self.ImageAxesWidget.toolbar = NavigationToolbar(
+            self.ImageAxesWidget.canvas, self.ImageAxesWidget)
+        image_axes_layout = QVBoxLayout()
+        image_axes_layout.addWidget(self.ImageAxesWidget.canvas)
+        image_axes_layout.addWidget(self.ImageAxesWidget.toolbar)
+        self.ImageAxesWidget.setLayout(image_axes_layout)
+
+        # Option buttons VBox
+        self.OptionsWidget = QWidget(self)
+        self.OptionsWidget.buttonA = QPushButton('A')
+        self.OptionsWidget.buttonA.clicked.connect(self.pollA)
+        self.OptionsWidget.buttonB = QPushButton('B')
+        self.OptionsWidget.buttonB.clicked.connect(self.pollB)
+        self.OptionsWidget.buttonC = QPushButton('C')
+        self.OptionsWidget.buttonC.clicked.connect(self.pollC)
+        self.OptionsWidget.buttonD = QPushButton('D')
+        self.OptionsWidget.buttonD.clicked.connect(self.pollD)
+        self.OptionsWidget.buttonE = QPushButton('E')
+        self.OptionsWidget.buttonE.clicked.connect(self.pollE)
+        options_layout = QVBoxLayout()
+        options_layout.addWidget(self.OptionsWidget.buttonA)
+        options_layout.addWidget(self.OptionsWidget.buttonB)
+        options_layout.addWidget(self.OptionsWidget.buttonC)
+        options_layout.addWidget(self.OptionsWidget.buttonD)
+        options_layout.addWidget(self.OptionsWidget.buttonE)
+        self.OptionsWidget.setLayout(options_layout)
+
+        # Reset and view results button VBox
+        self.ResetWidget = QWidget(self)
+        self.ResetWidget.reset_button = QPushButton('Reset')
+        self.ResetWidget.reset_button.clicked.connect(self.reset_poll)
+        self.ResetWidget.test_plot_button = QPushButton('Test Plot')
+        self.ResetWidget.test_plot_button.clicked.connect(self.test_plot)
+        reset_layout = QVBoxLayout()
+        reset_layout.addWidget(self.ResetWidget.reset_button)
+        reset_layout.addWidget(self.ResetWidget.test_plot_button)
+        self.ResetWidget.setLayout(reset_layout)
+
+        # Organize MainGrid
+        self.MainGrid = QGridLayout()
+        # self.MainGrid.setSpacing(10)
+        self.MainGrid.addWidget(self.OptionsWidget, 1, 0, 2, 1)
+        self.MainGrid.addWidget(self.ResetWidget, 6, 0, 1, 1)
+        self.MainGrid.addWidget(self.ResultsAxesWidget, 0, 1, 8, 11)
+        self.MainGrid.addWidget(self.ImageAxesWidget, 8, 1, 8, 11)
+
+        # Set MainGrid as central widget of MainWindow
         self.MainWidget = QWidget(self)
+        self.MainWidget.setLayout(self.MainGrid)
         self.setCentralWidget(self.MainWidget)
 
-        self.MainWidget.figure = plt.figure()
+        # Initialize results and image axes
+        self.results_ax = self.ResultsAxesWidget.figure.add_subplot(111)
+        self.ResultsAxesWidget.figure.clear()
+        self.image_ax = self.ImageAxesWidget.figure.add_subplot(111)
+        self.ImageAxesWidget.figure.clear()
 
-        self.MainWidget.canvas = FigureCanvas(self.MainWidget.figure)
-
-        self.MainWidget.plot_button = QPushButton('Test Plot')
-        self.MainWidget.plot_button.clicked.connect(self.test_plot)
-
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.MainWidget.canvas, 2)
-        main_layout.addWidget(self.MainWidget.plot_button)
-        self.MainWidget.setLayout(main_layout)
-
-        # Buttons
-        self.ButtonWidget = QWidget(self)
-
-        self.ButtonWidget.buttonA = QPushButton('A')
-        self.ButtonWidget.buttonA.clicked.connect(self.pollA)
-
-        self.ButtonWidget.buttonB = QPushButton('B')
-        self.ButtonWidget.buttonB.clicked.connect(self.pollB)
-
-        self.ButtonWidget.buttonC = QPushButton('C')
-        self.ButtonWidget.buttonC.clicked.connect(self.pollC)
-
-        self.ButtonWidget.buttonD = QPushButton('D')
-        self.ButtonWidget.buttonD.clicked.connect(self.pollD)
-
-        self.ButtonWidget.buttonE = QPushButton('E')
-        self.ButtonWidget.buttonE.clicked.connect(self.pollE)
-
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(self.ButtonWidget.buttonA)
-        button_layout.addWidget(self.ButtonWidget.buttonB)
-        button_layout.addWidget(self.ButtonWidget.buttonC)
-        button_layout.addWidget(self.ButtonWidget.buttonD)
-        button_layout.addWidget(self.ButtonWidget.buttonE)
-        self.ButtonWidget.setLayout(button_layout)
-
-        main_layout.addWidget(self.ButtonWidget)
-
-        self.MainWidget.reset_button = QPushButton('Reset')
-        self.MainWidget.reset_button.clicked.connect(self.reset_poll)
-        main_layout.addWidget(self.MainWidget.reset_button)
-
+    def initModel(self):
         graph_path = 'frozen_inference_graph.pb'
         label_path = 'label_map.pbtxt'
 
         self.model = Model(graph_path, label_path)
 
+    def initConn(self):
         self.options_list = ['A', 'B', 'C', 'D', 'E']
 
         self.connection = Connection(
-            '10.42.0.1', 5001, '10.42.0.171', 5001)
+            '192.168.0.16', 5001, '192.168.0.19', 5001)
 
+    def initResults(self):
         self.results = Results()
 
-        # create an axis
-        self.ax = self.MainWidget.figure.add_subplot(111)
-        self.MainWidget.figure.clear()
-
-    def pollA(self):
-        option = 'A'
+    def poll_callback(self, option):
         self.connection.send_cap_trigger()
         inc_data = self.connection.wait_image_data()
         image_np = inc_data
@@ -233,7 +264,13 @@ class MainWindow(QMainWindow):
         print('INFERENCE TIME: {:.3f}'.format(toc-tic))
 
         self.results.add_result(option, num_hands)
-        self.plot()
+        self.update_plot()
+
+        self.view_image()
+
+    def pollA(self):
+        option = 'A'
+        self.poll_callback(option)
 
     def pollB(self):
         option = 'B'
@@ -253,55 +290,86 @@ class MainWindow(QMainWindow):
 
     def reset_poll(self):
         self.results.reset_results()
-        self.ax.clear()
-        self.MainWidget.figure.clear()
-        self.MainWidget.canvas.draw()
+        self.results_ax.clear()
+        self.ResultsAxesWidget.figure.clear()
+        self.ResultsAxesWidget.canvas.draw()
 
-    def plot(self):
-        self.MainWidget.figure.clear()
+        self.image_ax.clear()
+        self.ImageAxesWidget.figure.clear()
+        self.ImageAxesWidget.canvas.draw()
+
+    def update_plot(self):
+        self.ResultsAxesWidget.figure.clear()
 
         # create an axis
-        self.ax = self.MainWidget.figure.add_subplot(111)
+        self.results_ax = self.ResultsAxesWidget.figure.add_subplot(111)
 
         results_dict = self.results.results_dict
         results = [results_dict[option] for option in results_dict]
-        self.ax.bar(self.options_list, results, color='deepskyblue')
+        self.results_ax.bar(self.options_list, results, color='deepskyblue')
 
-        rects = self.ax.patches
+        rects = self.results_ax.patches
         labels = results
         for rect, label in zip(rects, labels):
             if label == 0:
                 pass
             else:
                 height = rect.get_height()
-                self.ax.text(rect.get_x() + rect.get_width() / 2,
-                             height / 2, label, ha='center', va='top')
+                self.results_ax.text(rect.get_x() + rect.get_width() / 2,
+                                     height / 2, label, ha='center', va='top')
 
         # refresh canvas
-        self.MainWidget.canvas.draw()
+        self.ResultsAxesWidget.canvas.draw()
 
     def test_plot(self):
 
-        self.MainWidget.figure.clear()
+        self.ResultsAxesWidget.figure.clear()
 
         # create an axis
-        self.ax = self.MainWidget.figure.add_subplot(111)
+        self.results_ax = self.ResultsAxesWidget.figure.add_subplot(111)
 
-        results = [random.randint(0, 10) for _ in range(5)]
-        self.ax.bar(self.options_list, results, color='deepskyblue')
+        results = [random.randint(0, 25) for _ in range(5)]
+        self.results_ax.bar(self.options_list, results, color='deepskyblue')
 
-        rects = self.ax.patches
+        rects = self.results_ax.patches
         labels = results
         for rect, label in zip(rects, labels):
             if label == 0:
                 pass
             else:
                 height = rect.get_height()
-                self.ax.text(rect.get_x() + rect.get_width() / 2,
-                             height / 2, label, ha='center', va='top')
+                if height > 1:
+                    self.results_ax.text(rect.get_x() + rect.get_width() / 2,
+                                         height / 2, label, ha='center', va='top')
+                else:
+                    self.results_ax.text(rect.get_x() + rect.get_width() / 2,
+                                         height / 2 + 2, label, ha='center', va='top')
 
-        # refresh canvas
-        self.MainWidget.canvas.draw()
+        # Display test image
+        dummy_image = Image.open('default_display_image.png')
+        self.ImageAxesWidget.figure.clear()
+        self.image_ax = self.ImageAxesWidget.figure.add_subplot(111)
+        self.image_ax.imshow(dummy_image)
+
+        # refresh canvases
+        self.ResultsAxesWidget.canvas.draw()
+        self.ImageAxesWidget.canvas.draw()
+
+    def view_image(self):
+        vis_util.visualize_boxes_and_labels_on_image_array(
+            self.model.image_np,
+            self.model.output_dict['detection_boxes'],
+            self.model.output_dict['detection_classes'],
+            self.model.output_dict['detection_scores'],
+            self.model.category_index,
+            instance_masks=self.model.output_dict.get('detection_masks'),
+            use_normalized_coordinates=True,
+            min_score_thresh=self.model.detection_thresh,
+            line_thickness=6)
+        self.ImageAxesWidget.figure.clear()
+        self.image_ax = self.ImageAxesWidget.figure.add_subplot(111)
+        self.image_ax.imshow(self.model.image_np)
+        self.ImageAxesWidget.canvas.draw()
 
 
 if __name__ == '__main__':
