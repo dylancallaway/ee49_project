@@ -287,6 +287,8 @@ class MainWindow(QMainWindow):
         option = 'A'
         self.poll_callback(option)
 
+    # TODO Update the below functions. Add to rpi.py so when I close the connection it closes nicely, etc.
+
     def pollB(self):
         option = 'B'
         return option
