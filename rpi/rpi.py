@@ -37,16 +37,20 @@ class Connection:
         return data
 
 
-stream = io.BytesIO()
 cam = picamera.PiCamera()
 cam.resolution = (1920, 1080)
 
-connection = Connection('10.42.0.171', 5001, '10.42.0.1', 5001)
+local_recv_host = '10.42.0.171'
+local_send_host = '10.42.0.1'
+
+
+
+connection = Connection('192.168.0.19', 5001, '192.168.0.16', 5001)
 
 while True:
     data = connection.wait_data()
     if data == b'cap':
-        # for _ in range(50):
+        stream = io.BytesIO()
         cam.capture(stream, format='jpeg')
         stream.seek(0)
         image_pil = Image.open(stream)
