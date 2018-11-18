@@ -49,7 +49,7 @@ class Connection:
 
 
 cam = picamera.PiCamera()
-cam.resolution = (2560, 1920)
+cam.resolution = (2592, 1944)
 
 local_recv_host = '10.42.0.171'
 local_send_host = '10.42.0.1'

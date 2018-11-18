@@ -1,0 +1,1 @@
+export PYTHONPATH=$PYTHONPATH:/home/dylan/ee49_project/training/venv/lib/python3.6/site-packages/tensorflow/models/research:/home/dylan/ee49_project/training/venv/lib/python3.6/site-packages/tensorflow/models/research/slim

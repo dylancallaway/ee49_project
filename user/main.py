@@ -291,19 +291,19 @@ class MainWindow(QMainWindow):
 
     def pollB(self):
         option = 'B'
-        return option
+        self.poll_callback(option)
 
     def pollC(self):
         option = 'C'
-        return option
+        self.poll_callback(option)
 
     def pollD(self):
         option = 'D'
-        return option
+        self.poll_callback(option)
 
     def pollE(self):
         option = 'E'
-        return option
+        self.poll_callback(option)
 
     def reset_poll(self):
         self.results.reset_results()
