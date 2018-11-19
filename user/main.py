@@ -114,7 +114,10 @@ class Connection:
     def send_cap_trigger(self):
         # Sending socket setup
         self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.send_sock.connect((self.send_host, self.send_port))
+        try:
+            self.send_sock.connect((self.send_host, self.send_port))
+        except ConnectionRefusedError:
+            print('Connection refused. Please wait or check the status of the camera.')
         self.send_sock.sendall(b'cap')
         self.send_sock.close()
 
@@ -286,8 +289,6 @@ class MainWindow(QMainWindow):
     def pollA(self):
         option = 'A'
         self.poll_callback(option)
-
-    # TODO Update the below functions. Add to rpi.py so when I close the connection it closes nicely, etc.
 
     def pollB(self):
         option = 'B'
