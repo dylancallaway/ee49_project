@@ -264,12 +264,11 @@ class MainWindow(QMainWindow):
         self.model = Model(graph_path, label_path)
 
     def initConn(self):
-        self.options_list = ['A', 'B', 'C', 'D', 'E']
-
         self.connection = Connection(
             '10.42.0.1', 5001, '10.42.0.171', 5001)
 
     def initResults(self):
+        self.options_list = ['A', 'B', 'C', 'D', 'E']
         self.results = Results()
 
     def poll_callback(self, option):
