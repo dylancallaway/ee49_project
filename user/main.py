@@ -96,49 +96,9 @@ class Model:
         plt.show()
 
 
-class Connection:
-    def __init__(self, recv_host, recv_port, send_host, send_port):
-        self.recv_host = recv_host
-        self.recv_port = recv_port
-
-        self.send_host = send_host
-        self.send_port = send_port
-
-        # Receiving socket setup
-        self.recv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.recv_sock.bind((self.recv_host, self.recv_port))
-        print('Listening at: {}:{}'.format(
-            self.recv_host, str(self.recv_port)))
-        self.recv_sock.listen(1)
-
-    def send_cap_trigger(self):
-        # Sending socket setup
-        self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            self.send_sock.connect((self.send_host, self.send_port))
-        except ConnectionRefusedError:
-            print('Connection refused. Please wait or check the status of the camera.')
-        self.send_sock.sendall(b'cap')
-        self.send_sock.close()
-
-    def wait_image_data(self):
-        data = b''
-        self.conn, self.addr = self.recv_sock.accept()
-        print('Incoming connection from:', self.addr)
-        tic = time.time()
-        while True:
-            inc_data = self.conn.recv(8192)
-            if inc_data == b'':
-                print('Received {} bytes.'.format(len(data)))
-                break
-            else:
-                data += inc_data
-        toc = time.time()
-        print('RECEIVE TIME: {:.3f}'.format(toc-tic))
-        image_data = pickle.loads(data)
-        image_pil = Image.open(image_data)
-        image_np = np.array(image_pil)
-        return image_np
+'''
+Connection stuff
+'''
 
 
 class Results:
@@ -263,17 +223,14 @@ class MainWindow(QMainWindow):
 
         self.model = Model(graph_path, label_path)
 
-    def initConn(self):
-        self.connection = Connection(
-            '10.42.0.1', 5001, '10.42.0.171', 5001)
-
     def initResults(self):
         self.options_list = ['A', 'B', 'C', 'D', 'E']
         self.results = Results()
 
     def poll_callback(self, option):
-        self.connection.send_cap_trigger()
-        inc_data = self.connection.wait_image_data()
+        '''
+        Get image from RPi
+        '''
         image_np = inc_data
         tic = time.time()
         num_hands = self.model.detect(image_np)
