@@ -29,10 +29,13 @@ class Connection:
 
     def send_image(self, data):
         # Sending socket setup
-        self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.send_sock.connect((self.send_host, self.send_port))
-        self.send_sock.sendall(data)
-        self.send_sock.close()
+        try:
+            self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.send_sock.connect((self.send_host, self.send_port))
+            self.send_sock.sendall(data)
+            self.send_sock.close()
+        except OSError:
+            self.set_status(0)
 
     def init_recv(self):
         # Receiving socket setup
