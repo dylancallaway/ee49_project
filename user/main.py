@@ -23,6 +23,7 @@ import tensorflow as tf
 
 import numpy as np
 from PIL import Image
+from io import BytesIO
 
 
 class Model:
@@ -100,6 +101,42 @@ class Model:
 Connection stuff
 '''
 
+# HOST = ''                 # Symbolic name meaning all available interfaces
+# PORT = 50007              # Arbitrary non-privileged port
+#s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#s.bind((HOST, PORT))
+# s.listen(1)
+#conn, addr = s.accept()
+#print('Connected by', addr)
+
+
+class Connection:
+    def __init__(self):
+        HOST = ''                 # Symbolic name meaning all available interfaces
+        PORT = 50007              # Arbitrary non-privileged port
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.bind((HOST, PORT))
+        self.s.listen(1)
+        self.conn, self.addr = self.s.accept()
+        print('Connected by', self.addr)
+
+    def commandCapture(self):
+        self.conn.sendall(b'Capture')
+
+    def receiveImg(self):
+        len_data_pickled = self.conn.recv(2048)
+        len_data = pickle.loads(len_data_pickled)
+        print(len_data)
+        data = b''
+        while True:
+            packet = self.conn.recv(4096)
+            print("packet:"+str(len(packet))+"data:"+str(len(data)))
+            data += packet
+            if len(data) == len_data:
+                break
+        print('finish receiving')
+        return data
+
 
 class Results:
     def __init__(self):
@@ -127,8 +164,8 @@ class MainWindow(QMainWindow):
 
         self.initUI()
         self.initModel()
-        self.initConn()
         self.initResults()
+        self.connection = Connection()
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -228,14 +265,37 @@ class MainWindow(QMainWindow):
         self.results = Results()
 
     def poll_callback(self, option):
+        # conn.sendall(b'Capture')
+        self.connection.commandCapture()
+        time.sleep(0.5)
+        #len_data_pickled = conn.recv(2048)
+        #len_data = pickle.loads(len_data_pickled)
+        # print(len_data)
+        #data = b''
+        # while True:
+        #    packet = conn.recv(4096)
+        #    print("packet:"+str(len(packet))+"data:"+str(len(data)))
+        #    data += packet
+        #    if len(data) == len_data:
+        #        break
+        data = self.connection.receiveImg()
+        print('finish receiving')
+        #data = conn.recv(len_data)
+        # print(data)
+        frame = pickle.loads(data)
+        # print(frame)
+        #image_PIL = Image.open(frame)
+        scr = Image.open(BytesIO(frame))
+        image_np = np.array(scr)
+
         '''
         Get image from RPi
         '''
-        image_np = inc_data
-        tic = time.time()
+        # image_np = frame
+        # tic = time.time()
         num_hands = self.model.detect(image_np)
-        toc = time.time()
-        print('INFERENCE TIME: {:.3f}'.format(toc-tic))
+        # toc = time.time()
+        # print('INFERENCE TIME: {:.3f}'.format(toc-tic))
 
         self.results.add_result(option, num_hands)
         self.update_plot()
