@@ -15,7 +15,7 @@ class Connection:
         self.send_host = send_host
         self.send_port = send_port
 
-        self.recv_status = 0
+        self.status = 0
 
     def wait_conn(self, num_mins):
         for _ in range(12*num_mins):
@@ -51,13 +51,13 @@ class Connection:
         print('Received {} bytes.'.format(len(data)))
         return data
 
-    def status_check(self):
+    def get_status(self):
         # 1 = OK, 0 = NOK
-        return self.recv_status
+        return self.status
 
     def set_status(self, status):
         # 1 = OK, 0 = NOK
-        self.recv_status = status
+        self.status = status
 
     def end_connection(self):
         self.recv_sock.close()
@@ -65,19 +65,20 @@ class Connection:
         connection.set_status(0)
 
 
-
 local_recv_host = '10.42.0.171'
 local_send_host = '10.42.0.1'
 
 connection = Connection(local_recv_host, 5001, local_send_host, 5001)
-# Wait for connection for 5 mins
-connection.wait_conn(5)
 
 stream = io.BytesIO()
 
 cam = picamera.PiCamera(resolution=(2592, 1944))
 
 while True:
+
+    if connection.get_status() == 0:
+        connection.wait_conn(5)
+
     data = connection.wait_data()
     if data == b'cap':
         # tic = time.time()

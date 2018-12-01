@@ -114,10 +114,7 @@ class Connection:
     def send_cap_trigger(self):
         # Sending socket setup
         self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            self.send_sock.connect((self.send_host, self.send_port))
-        except ConnectionRefusedError:
-            print('Connection refused. Please wait or check the status of the camera.')
+        self.send_sock.connect((self.send_host, self.send_port))
         self.send_sock.sendall(b'cap')
         self.send_sock.close()
 
@@ -272,9 +269,12 @@ class MainWindow(QMainWindow):
         self.results = Results()
 
     def poll_callback(self, option):
+        tic = time.time()
         self.connection.send_cap_trigger()
         inc_data = self.connection.wait_image_data()
         image_np = inc_data
+        toc = time.time()
+        print('TOTAL TIME: {:.3f}'.format(toc-tic))
         tic = time.time()
         num_hands = self.model.detect(image_np)
         toc = time.time()
