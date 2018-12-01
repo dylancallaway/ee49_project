@@ -27,15 +27,16 @@ class Connection:
                 print('Waiting for connection...')
                 time.sleep(5)
 
-    def send_image(self, data):
+    def send_image(self, trigger):
         # Sending socket setup
         try:
             self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.send_sock.connect((self.send_host, self.send_port))
-            self.send_sock.sendall(data)
+            self.send_sock.sendall(trigger)
             self.send_sock.close()
         except OSError:
             self.set_status(0)
+            self.send_sock.close()
 
     def init_recv(self):
         # Receiving socket setup
@@ -46,13 +47,13 @@ class Connection:
             self.recv_host, str(self.recv_port)))
         self.recv_sock.listen(1)
 
-    def wait_data(self):
-        data = b''
+    def wait_trigger(self):
+        trigger = b''
         self.conn, self.addr = self.recv_sock.accept()
         print('Incoming connection from:', self.addr)
-        data = self.conn.recv(3)
-        print('Received {} bytes.'.format(len(data)))
-        return data
+        trigger = self.conn.recv(3)
+        print('Received {} bytes.'.format(len(trigger)))
+        return trigger
 
     def get_status(self):
         # 1 = OK, 0 = NOK
@@ -82,8 +83,8 @@ while True:
     if connection.get_status() == 0:
         connection.wait_conn(5)
 
-    data = connection.wait_data()
-    if data == b'cap':
+    trigger = connection.wait_trigger()
+    if trigger == b'cap':
         # tic = time.time()
         cam.capture(stream, format='jpeg')
         image_data = pickle.dumps(stream)
