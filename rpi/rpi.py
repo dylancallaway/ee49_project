@@ -5,6 +5,7 @@ import pickle
 import time
 import picamera
 import io
+from gpiozero import LED
 
 
 class Connection:
@@ -69,6 +70,8 @@ class Connection:
         connection.set_status(0)
 
 
+led = LED(17)
+
 local_recv_host = '10.42.0.171'
 local_send_host = '10.42.0.1'
 
@@ -79,12 +82,15 @@ stream = io.BytesIO()
 cam = picamera.PiCamera(resolution=(2592, 1944))
 
 while True:
-
     if connection.get_status() == 0:
+        led.blink()
         connection.wait_conn(5)
+
+    led.off()
 
     trigger = connection.wait_trigger()
     if trigger == b'cap':
+        led.on()
         # tic = time.time()
         cam.capture(stream, format='jpeg')
         image_data = pickle.dumps(stream)
