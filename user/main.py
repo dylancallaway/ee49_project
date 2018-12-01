@@ -113,7 +113,7 @@ Connection stuff
 class Connection:
     def __init__(self):
         HOST = ''                 # Symbolic name meaning all available interfaces
-        PORT = 50007              # Arbitrary non-privileged port
+        PORT = 5001              # Arbitrary non-privileged port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind((HOST, PORT))
         self.s.listen(1)
@@ -128,13 +128,16 @@ class Connection:
         len_data = pickle.loads(len_data_pickled)
         print(len_data)
         data = b''
+        tic = time.time()
         while True:
             packet = self.conn.recv(4096)
-            print("packet:"+str(len(packet))+"data:"+str(len(data)))
+            # print("packet:"+str(len(packet))+"data:"+str(len(data)))
             data += packet
             if len(data) == len_data:
                 break
         print('finish receiving')
+        toc = time.time()
+        print('ELAPSED TIME: {}'.format(toc-tic))
         return data
 
 
@@ -279,7 +282,6 @@ class MainWindow(QMainWindow):
         #    if len(data) == len_data:
         #        break
         data = self.connection.receiveImg()
-        print('finish receiving')
         #data = conn.recv(len_data)
         # print(data)
         frame = pickle.loads(data)
