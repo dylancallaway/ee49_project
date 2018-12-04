@@ -1,3 +1,5 @@
+#!/home/dylan/ee49_project/user/venv/bin/python
+
 import random
 import sys
 
@@ -261,8 +263,11 @@ class MainWindow(QMainWindow):
         self.model = Model(graph_path, label_path)
 
     def initConn(self):
-        self.connection = Connection(
-            '10.42.0.1', 5001, '10.42.0.171', 5001)
+        try:
+            self.connection = Connection(
+                '10.42.0.1', 5001, '10.42.0.171', 5001)
+        except OSError:
+            print('Waiting for local network to be started...')
 
     def initResults(self):
         self.options_list = ['A', 'B', 'C', 'D', 'E']
